@@ -9,6 +9,9 @@ use SendGrid\Mail\SandBoxMode;
 
 class SendMailController extends Controller
 {
+
+    private $sendgrid;
+
     private const SEND_VALIDATOR = [
         'from' => 'required',
         'from.email' => 'required|email',
@@ -22,8 +25,13 @@ class SendMailController extends Controller
         'sandbox' => 'boolean'
     ];
 
+    public function __construct() {
+        $this->sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+    }
+
     /**
      * @throws \SendGrid\Mail\TypeException
+     * @throws \Illuminate\Validation\ValidationException
      */
     public function sendMessage(Request $request): \Illuminate\Http\JsonResponse
     {
@@ -53,10 +61,8 @@ class SendMailController extends Controller
             $email->setMailSettings(self::getSandboxEnabledMailSettings());
         }
 
-        $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
-
         try {
-            $sendgridResponse = $sendgrid->send($email);
+            $sendgridResponse = $this->sendgrid->send($email);
 
             $sendgridResponseData = [
                 'sendgridStatusCode' => $sendgridResponse->statusCode(),
@@ -67,15 +73,20 @@ class SendMailController extends Controller
             echo 'Caught exception: '. $e->getMessage() ."\n";
         }
 
-        $data = array_merge($data, ['result' => 'Called sendMessage endpoint'], ['sendgridResponse' => $sendgridResponseData]);
+        $data = array_merge($data, [
+            'result' => 'Called sendMessage endpoint',
+            'sendgridResponse' => $sendgridResponseData
+        ]);
 
         return response()->json($data);
     }
 
     /**
      * @throws \SendGrid\Mail\TypeException
+     * @throws \Illuminate\Validation\ValidationException
      */
-    public function sendTemplate(Request $request) {
+    public function sendTemplate(Request $request): \Illuminate\Http\JsonResponse
+    {
 
         $this->validate($request, self::SEND_VALIDATOR);
 
@@ -87,8 +98,6 @@ class SendMailController extends Controller
         $subjectTemplate = $data['message']['subject'];
         $plainTemplate = $data['message']['text/plain'];
         $htmlTemplate = $data['message']['text/html'] ?? $plainTemplate;
-
-        $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
 
         $sentMessages = [];
 
@@ -114,7 +123,7 @@ class SendMailController extends Controller
             $email->addContent('text/html', $expandedTextHtmlMessage);
 
             try {
-                $sendgridResponse = $sendgrid->send($email);
+                $sendgridResponse = $this->sendgrid->send($email);
 
                 $sendgridResponseData = [
                     'sendgridStatusCode' => $sendgridResponse->statusCode(),
@@ -133,7 +142,11 @@ class SendMailController extends Controller
             ];
         }
 
-        $data = array_merge($data, ['result' => 'Called sendTemplate endpoint', 'sentMessages' => $sentMessages]);
+        $data = array_merge($data, [
+            'result' => 'Called sendTemplate endpoint',
+            'sentMessages' => $sentMessages,
+            'sendgridResponse' => $sendgridResponseData
+        ]);
 
         return response()->json($data);
     }
