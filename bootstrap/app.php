@@ -23,7 +23,7 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
-// $app->withFacades();
+ $app->withFacades();
 
 // $app->withEloquent();
 
@@ -61,6 +61,9 @@ $app->singleton(
 
 $app->configure('app');
 
+/* register the "view" configuration file */
+$app->configure('view');
+
 /*
 |--------------------------------------------------------------------------
 | Register Middleware
@@ -79,6 +82,10 @@ $app->configure('app');
 // $app->routeMiddleware([
 //     'auth' => App\Http\Middleware\Authenticate::class,
 // ]);
+
+$app->routeMiddleware([
+    'JsonRequestMiddleware' => App\Http\Middleware\JsonRequestMiddleware::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +117,7 @@ $app->router->group([
     'namespace' => 'App\Http\Controllers',
 ], function ($router) {
     require __DIR__.'/../routes/web.php';
+    require __DIR__.'/../routes/api.php';
 });
 
 return $app;
