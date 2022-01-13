@@ -33,7 +33,8 @@ $router->group(['prefix' => 'v1', 'middleware' => 'JsonRequestMiddleware'], func
             'request' => $data,
             'response' => [
                 'result' => 'Success.'
-            ]
+            ],
+            'test_env_var' => getenv('TEST_ENV_VAR')
         ]);
 
         return "Success.";
