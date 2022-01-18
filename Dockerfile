@@ -16,7 +16,7 @@ RUN cd /app && \
 
 RUN chown -R www-data: /app
 
-RUN cd /app && php artisan migrate:fresh
+RUN cd /app && php artisan migrate:fresh --force
 RUN chown -R www-data:www-data /app/database/database.sqlite
 
 CMD sh /app/docker/startup.sh
