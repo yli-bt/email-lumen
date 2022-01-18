@@ -23,7 +23,7 @@ $router->group(['prefix' => 'v1', 'middleware' => 'JsonRequestMiddleware'], func
 
     $router->post('/message', 'SendMailController@queueMessage');
 
-    $router->post('/template', 'SendMailController@sendTemplate');
+    $router->post('/template', 'SendMailController@queueTemplate');
 
     $router->get('/test', function () use ($router) {
 

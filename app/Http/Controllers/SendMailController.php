@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\MessageJob;
 
+use App\Jobs\TemplateJob;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -110,70 +111,20 @@ class SendMailController extends Controller
      * @throws TypeException
      * @throws ValidationException
      */
-    public function sendTemplate(Request $request): JsonResponse
+    public function queueTemplate(Request $request): JsonResponse
     {
-
         $this->validate($request, self::SEND_VALIDATOR);
 
         $data = $request->all();
 
-        $fromEmail = $data['from']['email'];
-        $fromName = $data['from']['name'] ?? $fromEmail;
+        $dispatchResult = dispatch(new TemplateJob($data));
 
-        $subjectTemplate = $data['message']['subject'];
-        $plainTemplate = $data['message']['text/plain'];
-        $htmlTemplate = $data['message']['text/html'] ?? $plainTemplate;
+        Log::notice('Dispatching TemplateJob', ['dispatchResult' => $dispatchResult]);
 
-        $sentMessages = [];
-
-        $m = new \Mustache_Engine();
-
-        foreach ($data['to'] as $recipient) {
-
-            $expandedSubject = $m->render($subjectTemplate, $recipient); // "Hello, World!"
-            $expandedTextPlainMessage = $m->render($plainTemplate, $recipient);
-            $expandedTextHtmlMessage = $m->render($htmlTemplate, $recipient);
-
-            $email = new Mail();
-
-            if (array_key_exists('sandbox', $data) && $data['sandbox'] == true) {
-                $email->setMailSettings(self::getSandboxEnabledMailSettings());
-            }
-
-            $email->setFrom($fromEmail, $fromName);
-            $email->addTo($recipient['email'], $recipient['name']);
-
-            $email->setSubject($expandedSubject);
-            $email->addContent('text/plain', $expandedTextPlainMessage);
-            $email->addContent('text/html', $expandedTextHtmlMessage);
-
-            try {
-                $sendgridResponse = $this->sendgrid->send($email);
-
-                $sendgridResponseData = [
-                    'sendgridStatusCode' => $sendgridResponse->statusCode(),
-                    'sendgridHeaders' => $sendgridResponse->headers(),
-                    'sendgridBody' => $sendgridResponse->body(),
-                ];
-            } catch (Exception $e) {
-                echo 'Caught exception: '. $e->getMessage() ."\n";
-            }
-
-            $sentMessages[] = [
-                'to' => $recipient,
-                'subject' => $expandedSubject,
-                'text/plain' => $expandedTextPlainMessage,
-                'text/html' => $expandedTextHtmlMessage
-            ];
-        }
-
-        $data = array_merge($data, [
-            'result' => 'Called sendTemplate endpoint',
-            'sentMessages' => $sentMessages,
-            'sendgridResponse' => $sendgridResponseData
+        return response()->json([
+            'result' => 'TemplateJob dispatched',
+            'time' => date(DATE_ATOM)
         ]);
-
-        return response()->json($data);
     }
 
     private static function getSandboxEnabledMailSettings() {

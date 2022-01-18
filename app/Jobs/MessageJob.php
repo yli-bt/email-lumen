@@ -9,22 +9,8 @@ use SendGrid\Mail\MailSettings;
 use SendGrid\Mail\SandBoxMode;
 use SendGrid\Mail\TypeException;
 
-class MessageJob extends Job
+class MessageJob extends SendGridJob
 {
-
-    private $data;
-    private $sendgrid;
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
-    public function __construct($data)
-    {
-        $this->data = $data;
-        $this->sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
-    }
-
     /**
      * Execute the job.
      *
@@ -76,16 +62,5 @@ class MessageJob extends Job
 
         Log::notice('MessageJob processed.', $data);
         Log::notice("SendGrid response", $sendgridResponseData);
-    }
-
-    private static function getSandboxEnabledMailSettings() {
-
-        /* create a mail settings object with sandbox mode enabled */
-        $mailSettings= new MailSettings();
-        $sandboxMode = new SandBoxMode();
-        $sandboxMode->setEnable(true);
-        $mailSettings->setSandboxMode($sandboxMode);
-
-        return $mailSettings;
     }
 }

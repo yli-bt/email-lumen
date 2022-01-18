@@ -9,22 +9,8 @@ use SendGrid\Mail\MailSettings;
 use SendGrid\Mail\SandBoxMode;
 use SendGrid\Mail\TypeException;
 
-class TemplateJob extends Job
+class TemplateJob extends SendGridJob
 {
-
-    private $data;
-    private $sendgrid;
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
-    public function __construct($data)
-    {
-        $this->data = $data;
-        $this->sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
-    }
-
     /**
      * Execute the job.
      *
@@ -34,58 +20,60 @@ class TemplateJob extends Job
     {
         $data = $this->data;
 
-        $email = new Mail();
+        $fromEmail = $data['from']['email'];
+        $fromName = $data['from']['name'] ?? $fromEmail;
 
-        $fromName = $data['from']['name'] ?? $data['from']['email'];
-        $email->setFrom($data['from']['email'], $fromName);
+        $subjectTemplate = $data['message']['subject'];
+        $plainTemplate = $data['message']['text/plain'];
+        $htmlTemplate = $data['message']['text/html'] ?? $plainTemplate;
 
-        $email->setSubject($data['message']['subject'] ?? '');
+        $sentMessages = [];
 
-        $textMessage = $data['message']['text/plain'];
-        $htmlMessage = $data['message']['text/html'] ?? $data['message']['text/plain'];
-
-        $email->addContent('text/plain', $textMessage);
-        $email->addContent('text/html', $htmlMessage);
+        $m = new \Mustache_Engine();
 
         foreach ($data['to'] as $recipient) {
-            $toName = $recipient['name'] ?? $recipient['email'];
-            $email->addTo($recipient['email'], $toName);
-        }
 
-        if (array_key_exists('sandbox', $data) && $data['sandbox'] == true) {
-            $email->setMailSettings(self::getSandboxEnabledMailSettings());
-        }
+            $expandedSubject = $m->render($subjectTemplate, $recipient);
+            $expandedTextPlainMessage = $m->render($plainTemplate, $recipient);
+            $expandedTextHtmlMessage = $m->render($htmlTemplate, $recipient);
 
-        try {
-            $sendgridResponse = $this->sendgrid->send($email);
+            $email = new Mail();
 
-            $sendgridResponseData = [
-                'sendgridStatusCode' => $sendgridResponse->statusCode(),
-                'sendgridHeaders' => $sendgridResponse->headers(),
-                'sendgridBody' => $sendgridResponse->body(),
+            if (array_key_exists('sandbox', $data) && $data['sandbox'] == true) {
+                $email->setMailSettings(self::getSandboxEnabledMailSettings());
+            }
+
+            $email->setFrom($fromEmail, $fromName);
+            $email->addTo($recipient['email'], $recipient['name']);
+
+            $email->setSubject($expandedSubject);
+            $email->addContent('text/plain', $expandedTextPlainMessage);
+            $email->addContent('text/html', $expandedTextHtmlMessage);
+
+            try {
+                $sendgridResponse = $this->sendgrid->send($email);
+
+                $sendgridResponseData = [
+                    'sendgridStatusCode' => $sendgridResponse->statusCode(),
+                    'sendgridHeaders' => $sendgridResponse->headers(),
+                    'sendgridBody' => $sendgridResponse->body(),
+                ];
+            } catch (Exception $e) {
+                echo 'Caught exception: '. $e->getMessage() ."\n";
+            }
+
+            $sentMessages[] = [
+                'to' => $recipient,
+                'subject' => $expandedSubject,
+                'text/plain' => $expandedTextPlainMessage,
+                'text/html' => $expandedTextHtmlMessage
             ];
-        } catch (Exception $e) {
-            echo 'Caught exception: '. $e->getMessage() ."\n";
+
         }
 
-        $data = array_merge($data, [
-            'result' => 'Called sendMessage endpoint',
-            'sendgridResponse' => $sendgridResponseData,
-            'time' => date(DATE_ATOM)
-        ]);
-
-        Log::notice('MessageJob processed.', $data);
+        Log::notice('TemplateJob processed.', $data);
+        Log::notice("Messages were:", $sentMessages);
         Log::notice("SendGrid response", $sendgridResponseData);
-    }
 
-    private static function getSandboxEnabledMailSettings() {
-
-        /* create a mail settings object with sandbox mode enabled */
-        $mailSettings= new MailSettings();
-        $sandboxMode = new SandBoxMode();
-        $sandboxMode->setEnable(true);
-        $mailSettings->setSandboxMode($sandboxMode);
-
-        return $mailSettings;
     }
 }
