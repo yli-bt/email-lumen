@@ -7,7 +7,7 @@ services:
   lumen_app:
     build:
       context: .
-      dockerfile: docker/php.dockerfile
+      dockerfile: Dockerfile
     container_name: laravel_app
     environment:
       - PORT=80
