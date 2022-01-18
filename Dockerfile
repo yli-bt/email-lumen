@@ -1,7 +1,6 @@
 FROM php:7.4-fpm-alpine
 
 RUN apk add --no-cache nginx supervisor wget sqlite-dev sqlite
-RUN docker-php-ext-install mysqli pdo pdo_mysql
 
 RUN mkdir -p /run/nginx
 
@@ -17,7 +16,7 @@ RUN cd /app && \
 
 RUN chown -R www-data: /app
 
-RUN cd /app && php artisan migrate:fresh --force
+COPY ./database/database.sqlite /app/database/database.sqlite
 RUN chown -R www-data:www-data /app/database/database.sqlite
 
 CMD sh /app/docker/startup.sh
