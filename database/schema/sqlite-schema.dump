@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS "migrations" ("id" integer not null primary key autoincrement, "migration" varchar not null, "batch" integer not null);
+CREATE TABLE IF NOT EXISTS "jobs" ("id" integer not null primary key autoincrement, "queue" varchar not null, "payload" text not null, "attempts" integer not null, "reserved_at" integer, "available_at" integer not null, "created_at" integer not null);
+CREATE INDEX "jobs_queue_index" on "jobs" ("queue");
+CREATE TABLE IF NOT EXISTS "failed_jobs" ("id" integer not null primary key autoincrement, "uuid" varchar not null, "connection" text not null, "queue" text not null, "payload" text not null, "exception" text not null, "failed_at" datetime default CURRENT_TIMESTAMP not null);
+CREATE UNIQUE INDEX "failed_jobs_uuid_unique" on "failed_jobs" ("uuid");
+INSERT INTO migrations VALUES(1,'2022_01_18_005108_create_jobs_table',1);
+INSERT INTO migrations VALUES(2,'2022_01_18_005125_create_failed_jobs_table',1);

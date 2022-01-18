@@ -21,23 +21,25 @@ $router->get('/v1', function () use ($router) {
 
 $router->group(['prefix' => 'v1', 'middleware' => 'JsonRequestMiddleware'], function() use ($router) {
 
-    $router->post('/message', 'SendMailController@sendMessage');
+    $router->post('/message', 'SendMailController@queueMessage');
 
     $router->post('/template', 'SendMailController@sendTemplate');
 
     $router->get('/test', function () use ($router) {
 
         $data = request()->all();
-
-        return response()->json([
+        $response_data = [
             'request' => $data,
             'response' => [
                 'result' => 'Success.'
             ],
             'test_env_var' => getenv('TEST_ENV_VAR')
-        ]);
+        ];
 
-        return "Success.";
+        Log::notice('Hit /test endpoint');
+
+        return response()->json($response_data);
+
     });
 
 });

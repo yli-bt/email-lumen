@@ -1,5 +1,6 @@
 /vendor
 /.idea
+/storage/email-lumen.sqlite
 Homestead.json
 Homestead.yaml
 .env
