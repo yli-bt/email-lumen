@@ -4,27 +4,19 @@ networks:
   laravel:
 
 services:
-  app:
+  lumen_app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/php.dockerfile
     container_name: laravel_app
     environment:
       - PORT=80
+      - DB_DATABASE=/app/database/database.sqlite
+      - DB_CONNECTION=sqlite
+      - DB_USERNAME=email-lumen
+      - DB_PASSWORD=secret
     ports:
       - 80:80
       - 443:443
-    networks:
-      - laravel
-
-  worker:
-    container_name: laravel_worker
-    build:
-      context: .
-      dockerfile: docker/worker.dockerfile
-    working_dir: /app
-    restart: always
-    depends_on:
-      - app
     networks:
       - laravel
