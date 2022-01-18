@@ -18,7 +18,7 @@ use SendGrid\Mail\TypeException;
 class SendMailController extends Controller
 {
 
-    private $sendgrid;
+//    private $sendgrid;
 
     private const SEND_VALIDATOR = [
         'from' => 'required',
@@ -33,60 +33,8 @@ class SendMailController extends Controller
         'sandbox' => 'boolean'
     ];
 
-    public function __construct() {
-        $this->sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
-    }
-
-//    /**
-//     * @throws TypeException
-//     * @throws ValidationException
-//     */
-//    public function sendMessage(Request $request): JsonResponse
-//    {
-////        $this->validate($request, self::SEND_VALIDATOR);
-//
-//        $data = $request->all();
-//
-//        $email = new Mail();
-//
-//        $fromName = $data['from']['name'] ?? $data['from']['email'];
-//        $email->setFrom($data['from']['email'], $fromName);
-//
-//        $email->setSubject($data['message']['subject'] ?? '');
-//
-//        $textMessage = $data['message']['text/plain'];
-//        $htmlMessage = $data['message']['text/html'] ?? $data['message']['text/plain'];
-//
-//        $email->addContent('text/plain', $textMessage);
-//        $email->addContent('text/html', $htmlMessage);
-//
-//        foreach ($data['to'] as $recipient) {
-//            $toName = $recipient['name'] ?? $recipient['email'];
-//            $email->addTo($recipient['email'], $toName);
-//        }
-//
-//        if (array_key_exists('sandbox', $data) && $data['sandbox'] == true) {
-//            $email->setMailSettings(self::getSandboxEnabledMailSettings());
-//        }
-//
-//        try {
-//            $sendgridResponse = $this->sendgrid->send($email);
-//
-//            $sendgridResponseData = [
-//                'sendgridStatusCode' => $sendgridResponse->statusCode(),
-//                'sendgridHeaders' => $sendgridResponse->headers(),
-//                'sendgridBody' => $sendgridResponse->body(),
-//            ];
-//        } catch (Exception $e) {
-//            echo 'Caught exception: '. $e->getMessage() ."\n";
-//        }
-//
-//        $data = array_merge($data, [
-//            'result' => 'Called sendMessage endpoint',
-//            'sendgridResponse' => $sendgridResponseData
-//        ]);
-//
-//        return response()->json($data);
+//    public function __construct() {
+//        $this->sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
 //    }
 
     /**
@@ -127,15 +75,15 @@ class SendMailController extends Controller
         ]);
     }
 
-    private static function getSandboxEnabledMailSettings() {
-
-        /* create a mail settings object with sandbox mode enabled */
-        $mailSettings= new MailSettings();
-        $sandboxMode = new SandBoxMode();
-        $sandboxMode->setEnable(true);
-        $mailSettings->setSandboxMode($sandboxMode);
-
-        return $mailSettings;
-    }
+//    private static function getSandboxEnabledMailSettings() {
+//
+//        /* create a mail settings object with sandbox mode enabled */
+//        $mailSettings= new MailSettings();
+//        $sandboxMode = new SandBoxMode();
+//        $sandboxMode->setEnable(true);
+//        $mailSettings->setSandboxMode($sandboxMode);
+//
+//        return $mailSettings;
+//    }
 
 }
