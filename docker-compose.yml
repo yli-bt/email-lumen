@@ -1,0 +1,30 @@
+version: '3.9'
+
+networks:
+  laravel:
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_app
+    environment:
+      - PORT=80
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - laravel
+
+  worker:
+    container_name: laravel_worker
+    build:
+      context: .
+      dockerfile: docker/worker.dockerfile
+    working_dir: /app
+    restart: always
+    depends_on:
+      - app
+    networks:
+      - laravel
