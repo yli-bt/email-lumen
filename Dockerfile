@@ -19,4 +19,6 @@ RUN chown -R www-data: /app
 COPY ./database/database.sqlite /app/database/database.sqlite
 RUN chown -R www-data:www-data /app/database/database.sqlite
 
+RUN cd /app && php artisan cache:clear
+
 CMD sh /app/docker/startup.sh
