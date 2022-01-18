@@ -1,6 +1,7 @@
 FROM php:7.4-fpm-alpine
 
 RUN apk add --no-cache nginx supervisor wget sqlite-dev sqlite
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
 RUN mkdir -p /run/nginx
 
