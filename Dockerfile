@@ -1,6 +1,6 @@
 FROM php:7.4-fpm-alpine
 
-RUN apk add --no-cache nginx supervisor wget sqlite-dev sqlite
+RUN apk add --no-cache nginx wget sqlite-dev sqlite
 
 RUN mkdir -p /run/nginx
 

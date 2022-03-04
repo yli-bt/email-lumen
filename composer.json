@@ -6,11 +6,7 @@
     "type": "project",
     "require": {
         "php": "^7.4|^8.0",
-        "laravel/lumen-framework": "^8.3.1",
-        "sendgrid/sendgrid": "~7",
-        "mustache/mustache": "~2.5"
-
-
+        "laravel/lumen-framework": "^8.3.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

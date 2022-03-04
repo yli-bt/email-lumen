@@ -16,31 +16,12 @@
 use Illuminate\Http\Request;
 
 $router->get('/v1', function () use ($router) {
-    return "Email microservice API" . " (". $router->app->version() . ")";
+    return "Hello World microservice API" . " (". $router->app->version() . ")";
 });
 
 $router->group(['prefix' => 'v1', 'middleware' => 'JsonRequestMiddleware'], function() use ($router) {
 
-    $router->post('/message', 'SendMailController@queueMessage');
-
-    $router->post('/template', 'SendMailController@queueTemplate');
-
-    $router->get('/test', function () use ($router) {
-
-        $data = request()->all();
-        $response_data = [
-            'request' => $data,
-            'response' => [
-                'result' => 'Success.'
-            ],
-            'test_env_var' => getenv('TEST_ENV_VAR')
-        ];
-
-        Log::notice('Hit /test endpoint');
-
-        return response()->json($response_data);
-
-    });
+	$router->post('/poc', 'WorkflowPocController@run');
 
 });
 
